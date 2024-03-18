@@ -1,58 +1,71 @@
+// index.js
 
-// Import required modules
-const express = require('express')
-// Initialize Express app
+const express = require("express");
+const bodyParser = require("body-parser");
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Middleware for parsing JSON bodies
-app.use(express.json());
+app.use(bodyParser.json());
 
-// POST route for /bfhl
-app.post('/bfhl', (req, res) => {
-    try {
-        // Extract data from the request body
-        const { array, user_id, email_id, college_roll_number } = req.body;
+// POST route for /bfhl endpoint
+app.post("/bfhl", (req, res) => {
+  try {
+    const inputArray = req.body.data;
 
-        // Initialize arrays for even, odd numbers, and uppercase alphabets
-        const evenNumbers = [];
-        const oddNumbers = [];
-        const uppercaseAlphabets = [];
-
-        // Iterate through the input array
-        array.forEach((element) => {
-            if (typeof element === 'number') {
-                if (element % 2 === 0) {
-                    evenNumbers.push(element);
-                } else {
-                    oddNumbers.push(element);
-                }
-            } else if (typeof element === 'string' && /^[A-Za-z]$/.test(element)) {
-                uppercaseAlphabets.push(element.toUpperCase());
-            }
-        });
-
-        // Construct response object
-        const response = {
-            user_id: user_id.replace(/ /g, '_'),
-            is_success: true,
-            email_id,
-            college_roll_number,
-            even_numbers: evenNumbers,
-            odd_numbers: oddNumbers,
-            uppercase_alphabets: uppercaseAlphabets
-        };
-
-        // Send response
-        res.status(200).json(response);
-    } catch (error) {
-        // Handle exceptions gracefully
-        console.error(error);
-        res.status(500).json({ is_success: false, error: 'Internal server error' });
+    if (!inputArray || !Array.isArray(inputArray)) {
+      return res.status(400).json({
+        user_id: "fullname_dob",
+        is_success: false,
+        message: "Input array is missing or invalid.",
+      });
     }
+
+    const userId = req.body.user_id || "john_doe_17091999";
+
+    const email = req.body.email || "john@xyz.com";
+
+    const collegeRollNumber = req.body.college_roll_number || "ABCD123";
+
+    // Logic to separate even, odd numbers and uppercase alphabets
+    const evenNumbers = [];
+    const oddNumbers = [];
+    const upperCaseAlphabets = [];
+    for (const element of inputArray) {
+      if (typeof parseInt(element) === "number") {
+        if (parseInt(element) % 2 === 0) {
+          evenNumbers.push(element);
+        } else {
+          oddNumbers.push(element);
+        }
+      } else if (typeof element === "string" && /^[a-zA-Z]$/.test(element)) {
+        upperCaseAlphabets.push(element.toUpperCase());
+      }
+    }
+
+    // Sending response with required data
+    res.json({
+      user_id: userId,
+      is_success: true,
+      status: "Success",
+      email_id: email,
+      college_roll_number: collegeRollNumber,
+      even_numbers_array: evenNumbers,
+      odd_numbers_array: oddNumbers,
+      upper_case_alphabets_array: upperCaseAlphabets,
+    });
+  } catch (error) {
+    // Handling exceptions
+    console.error("Error:", error);
+    res.status(500).json({
+      user_id: "fullname_dob",
+      is_success: false,
+      message: "Internal server error.",
+    });
+  }
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
+// Start server
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
